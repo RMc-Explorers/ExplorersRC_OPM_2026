@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ExplorersRC 2026 OPM</title>
+<meta name="theme-color" content="#1c1c1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Silver Mountain">
+<style>
+  :root {
+    --bg: #1c1c1e;
+    --surface: #2c2c2e;
+    --surface2: #3a3a3c;
+    --border: #48484a;
+    --accent: #e8a020;
+    --accent2: #10b981;
+    --text: #f2f2f7;
+    --muted: #8e8e93;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh; overflow-x: hidden; user-select: none;
+  }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    width: 30px; height: 30px; background: var(--accent); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: #000; flex-shrink: 0;
+  }
+  header .title { font-size: 16px; font-weight: 700; }
+  header .sub { font-size: 11px; color: var(--muted); }
+  .back-btn {
+    margin-left: auto; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--muted); padding: 5px 11px;
+    font-size: 13px; cursor: pointer; white-space: nowrap;
+  }
+  .back-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  #load-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: calc(100vh - 56px); padding: 40px 20px; text-align: center; gap: 20px;
+  }
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 16px; padding: 44px 36px;
+    cursor: pointer; transition: all 0.2s; max-width: 420px; width: 100%;
+    background: var(--surface);
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(232,160,32,0.06); }
+  .drop-zone .icon { font-size: 44px; margin-bottom: 14px; }
+  .drop-zone h2 { font-size: 17px; margin-bottom: 6px; }
+  .drop-zone p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .drop-zone input { display: none; }
+  #load-progress { color: var(--accent); font-size: 14px; min-height: 20px; }
+  .file-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000; font-weight: 600;
+    padding: 12px 24px; border-radius: 10px; font-size: 15px; cursor: pointer;
+  }
+
+  #app { display: none; flex-direction: column; min-height: calc(100vh - 56px); }
+
+  #session-panel {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    flex: 1; overflow-y: auto;
+  }
+  #session-panel::-webkit-scrollbar { width: 4px; }
+  #session-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .sp-top {
+    display: flex; align-items: center; gap: 8px; padding: 10px 10px 8px;
+    flex-wrap: wrap; position: sticky; top: 0; background: var(--surface);
+    z-index: 10; border-bottom: 1px solid var(--border);
+  }
+  #search-input {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 6px 10px; font-size: 13px; width: 150px; flex-shrink: 0;
+  }
+  #search-input:focus { outline: none; border-color: var(--accent); }
+  #dist-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+  .filter-chip {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--muted); white-space: nowrap;
+  }
+  .filter-chip.active { background: rgba(16,185,129,0.2); border-color: var(--accent2); color: var(--accent2); }
+  .add-file-chip {
+    margin-left: auto; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--muted); white-space: nowrap;
+  }
+  .add-file-chip:hover { color: var(--text); border-color: var(--muted); }
+
+  #session-list { display: flex; flex-direction: column; padding: 0; }
+  .date-row { display: flex; gap: 6px; padding: 10px; flex-wrap: wrap; align-items: center; flex: 1; }
+  .session-btn {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 11px; cursor: pointer; white-space: nowrap; color: var(--text);
+    font-size: 12px; flex-shrink: 0; text-align: left;
+  }
+  .session-btn.active { border-color: var(--accent); background: rgba(232,160,32,0.15); color: var(--accent); }
+  .s-name { font-weight: 600; font-size: 12px; }
+  .s-meta { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .session-btn.active .s-meta { color: rgba(232,160,32,0.65); }
+
+  #empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); gap: 10px; }
+
+  .notice {
+    margin: 12px; background: rgba(0,48,135,0.12); border: 1px solid rgba(0,85,179,0.4);
+    border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--muted);
+    line-height: 1.7; text-align: center;
+  }
+  .notice a { color: var(--accent2); text-decoration: none; }
+
+  @media (max-width: 480px) {
+    header .title { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="title">ExplorersRC 2026 OPM</div>
+    <div class="sub">offline plot viewer</div>
+  </div>
+</header>
+
+<div id="load-screen">
+  <div class="drop-zone" id="drop-zone">
+    <div class="icon">🎯</div>
+    <h2>Load Shot Log</h2>
+    <p>Select a Silver Mountain <strong>shotslog.csv</strong> export.<br>Every string and shot will be loaded and made searchable.</p>
+    <label for="file-input" class="file-label" style="margin-top:14px">Select CSV File</label>
+    <input type="file" id="file-input" accept=".csv">
+  </div>
+  <div id="load-progress"></div>
+</div>
+
+<div id="app">
+  <div id="session-panel">
+    <div class="sp-top">
+      <input type="text" id="search-input" placeholder="🔍  Search…" oninput="filterSessions()">
+      <div id="dist-filters"></div>
+      <div class="add-file-chip" onclick="document.getElementById('file-input-more').click()">+ Add CSV</div>
+      <input type="file" id="file-input-more" accept=".csv" style="display:none">
+    </div>
+    <div id="session-list"></div>
+    <div id="empty-list-state" class="notice" style="display:none">No sessions loaded yet.</div>
+  </div>
+
+  <div class="notice">
+    ⚠️ This site is made available based on data saved by scorers and has not been corrected or verified.
+    Please note that your stage may not have been saved, or may not have been saved with the correct name.
+    For official results please refer to the <a href="https://www.nraa.com.au" target="_blank">NRAA website</a>.
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+Object.defineProperty(window, 'sessions', {
+  get() { return window.__loadedSessions || []; },
+  set(v) { window.__loadedSessions = v; }
+});
+let allFaces = new Set();
+let activeDistFilter = '';
+
+function prog(msg) { document.getElementById('load-progress').textContent = msg; }
+
+// ── GitHub auto-load URL ──────────────────────────────────────────────────
+const GITHUB_CSV_URL = () => 'https://raw.githubusercontent.com/RMc-Explorers/ExplorersRC_OPM_2026/refs/heads/main/ExplorerOPM.csv';
+const STORAGE_KEY    = () => 'OPM_combined_v2';
+const DAY_BOUNDARY_TS = 1782417865878;
+function getEventLabel(sortTs) {
+  return sortTs < DAY_BOUNDARY_TS ? 'Day 1' : 'Day 2';
+}
+
+const MS_TO_FPS = 3.28084;
+
+function sessionKey(shots) {
+  const ts = shots.map(s => s.ts).filter(Boolean).join('|');
+  let h = 5381;
+  for (let i = 0; i < ts.length; i++) h = ((h << 5) + h) ^ ts.charCodeAt(i);
+  return (h >>> 0).toString(16);
+}
+
+function saveToStorage() {
+  try {
+    const payload = window.__loadedSessions.map(s => ({
+      key: s.key,
+      name: s.name, frame: s.frame, face_id: s.face_id,
+      micW: s.micW, micH: s.micH,
+      sortTs: s.sortTs, dateStr: s.dateStr, time: s.time,
+      shots: s.shots
+    }));
+    localStorage.setItem(STORAGE_KEY(), JSON.stringify(payload));
+  } catch(e) {
+    console.warn('localStorage save failed:', e);
+  }
+}
+
+function mergeSessions(incoming) {
+  const existing = new Set(window.__loadedSessions.map(s => s.key));
+  let added = 0;
+  for (const s of incoming) {
+    if (!existing.has(s.key)) {
+      window.__loadedSessions.push(s);
+      if (s.face_id) allFaces.add(s.face_id);
+      existing.add(s.key);
+      added++;
+    }
+  }
+  return added;
+}
+
+async function loadDataset() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY());
+    if (raw) {
+      const stored = JSON.parse(raw).map(s => ({ ...s, id: s.id || s.key }));
+      if (stored.length) {
+        window.__loadedSessions = stored;
+        stored.forEach(s => { if (s.face_id) allFaces.add(s.face_id); });
+        filterSessions();
+      }
+    }
+  } catch(e) {}
+
+  try {
+    const resp = await fetch(GITHUB_CSV_URL());
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    const incoming = parseShotsLogToSessions(text);
+    mergeSessions(incoming);
+    try { localStorage.setItem(STORAGE_KEY(), JSON.stringify(window.__loadedSessions)); } catch(e) {}
+    filterSessions();
+  } catch(e) {
+    console.warn('Dataset load failed:', e);
+  }
+}
+
+async function autoLoad() {
+  showApp();
+  filterSessions();
+  await loadDataset();
+}
+
+document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+document.getElementById('file-input-more').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value=''; });
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+async function handleFile(file) {
+  if (!file) return;
+  prog(`Reading ${file.name}...`);
+  try {
+    const text = await file.text();
+    const added = parseShotsLog(text);
+    prog('');
+    showApp();
+    filterSessions();
+    if (added === 0) prog('No new sessions found — all already loaded');
+    else prog(`✓ ${added} new session${added>1?'s':''} added (${window.__loadedSessions.length} total)`);
+  } catch (err) {
+    console.error(err);
+    prog('Failed to parse file — check it is a valid shotslog.csv export');
+  }
+}
+
+function parseShotsLogToSessions(text) {
+  const lines = text.split(/\r?\n/);
+  const blocks = [];
+  let cur = null;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith('### next string')) {
+      if (cur) blocks.push(cur);
+      cur = { meta: null, shots: [] };
+      continue;
+    }
+    if (line.startsWith('###')) continue;
+    if (!line.trim()) continue;
+    if (cur && cur.meta === null) { cur.meta = line.split(','); continue; }
+    if (cur) cur.shots.push(line.split(','));
+  }
+  if (cur) blocks.push(cur);
+
+  const result = [];
+  for (const block of blocks) {
+    if (!block.meta) continue;
+    const [name, frame, face, micW, micH] = block.meta;
+    const shots = [];
+    let scoredNum = 0, sighterNum = 0;
+    for (const row of block.shots) {
+      if (row.length < 18) continue;
+      const ts = Math.round(parseFloat(row[8]));
+      const sighter = row[12] === 'sighter';
+      const value = row[13];
+      const x = parseFloat(row[14]);
+      const y = parseFloat(row[15]);
+      const vMs = parseFloat(row[16]);
+      const fps = vMs ? Math.round(vMs * MS_TO_FPS) : 0;
+      const isMiss = value === '0' && x === 0 && y === 0;
+      if (sighter) sighterNum++; else scoredNum++;
+      shots.push({
+        display_text: sighter ? `S${sighterNum}` : String(scoredNum),
+        sighter, score: value, x, y, v: vMs, fps, ts, isMiss
+      });
+    }
+    if (!shots.length) continue;
+    const validTs = shots.map(s => s.ts).filter(t => t && !isNaN(t) && t > 1000000000000);
+    if (!validTs.length) continue;
+    const sortTs = Math.min(...validTs);
+    const key = sessionKey(shots);
+    result.push({
+      id: key,
+      key,
+      name: (name && name.trim()) ? name.trim() : `[${frame}]`, frame, face_id: face,
+      target_name: frame, dist: face,
+      micW: parseFloat(micW), micH: parseFloat(micH),
+      shots,
+      sortTs,
+      dateStr: new Date(sortTs).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}),
+      time: new Date(sortTs).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})
+    });
+  }
+  return result;
+}
+
+function parseShotsLog(text) {
+  const incoming = parseShotsLogToSessions(text);
+  const added = mergeSessions(incoming);
+  saveToStorage();
+  return added;
+}
+
+function showApp() {
+  document.getElementById('load-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  buildDistFilters();
+}
+
+function buildDistFilters() {
+  const wrap = document.getElementById('dist-filters');
+  wrap.innerHTML = '';
+  [...allFaces].sort().forEach(f => {
+    const chip = document.createElement('div');
+    chip.className = 'filter-chip' + (activeDistFilter === f ? ' active' : '');
+    chip.textContent = f;
+    chip.onclick = () => { activeDistFilter = activeDistFilter === f ? '' : f; filterSessions(); };
+    wrap.appendChild(chip);
+  });
+}
+
+function goToSession(id) {
+  window.location.href = 'display.html?id=' + encodeURIComponent(id);
+}
+
+function filterSessions() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const list = sessions.filter(s => {
+    const t = !q || s.name.toLowerCase().includes(q) || s.frame.toLowerCase().includes(q);
+    const d = !activeDistFilter || s.face_id === activeDistFilter;
+    return t && d;
+  });
+  list.sort((a,b) => b.sortTs - a.sortTs);
+
+  const c = document.getElementById('session-list');
+  c.innerHTML = '';
+  document.getElementById('empty-list-state').style.display = list.length ? 'none' : 'block';
+
+  const dr = document.createElement('div');
+  dr.className = 'date-row';
+  list.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'session-btn';
+    btn.onclick = () => goToSession(s.id);
+    const scored = s.shots.filter(sh => !sh.sighter).length;
+    const distLabel = s.face_id ? s.face_id.replace('AU-','') : '';
+    const eventLabel = getEventLabel(s.sortTs);
+    const isDay1 = eventLabel === 'Day 1';
+    const eventColour = isDay1 ? '#e8a020' : '#10b981';
+    const distBadge = distLabel
+      ? `<span style="background:var(--accent2);color:#fff;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:700;margin-right:4px">${distLabel}</span>`
+      : '';
+    const eventBadge = `<span style="background:${eventColour};color:#000;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:700;margin-right:4px">${isDay1 ? 'Day 1' : 'Day 2'}</span>`;
+    btn.innerHTML = `<div class="s-name">${eventBadge}${distBadge}${s.name}</div>
+      <div class="s-meta">${s.frame} · ${scored} shots · ${s.dateStr} · ${s.time}</div>`;
+    dr.appendChild(btn);
+  });
+  c.appendChild(dr);
+
+  buildDistFilters();
+}
+
+function returnToStart() {
+  if (window.__loadedSessions.length > 0) {
+    if (!confirm(`Clear all ${window.__loadedSessions.length} cached sessions and start fresh?`)) return;
+    localStorage.removeItem(STORAGE_KEY());
+  }
+  window.__loadedSessions = [];
+  allFaces = new Set();
+  activeDistFilter = '';
+
+  document.getElementById('load-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-input-more').value = '';
+  prog('');
+}
+
+// Auto-load on startup
+window.__loadedSessions = [];
+autoLoad();
+</script>
+</body>
+</html>
