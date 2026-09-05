@@ -167,9 +167,9 @@ let activeDistFilter = '';
 function prog(msg) { document.getElementById('load-progress').textContent = msg; }
 
 // ── GitHub auto-load URL ──────────────────────────────────────────────────
-const GITHUB_CSV_URL = () => 'https://raw.githubusercontent.com/RMc-Explorers/ExplorersRC_OPM_2026/refs/heads/main/ExplorersOPM.csv';
-const STORAGE_KEY    = () => 'OPM_combined_v5';
-const DAY_BOUNDARY_TS = 1788584372000;
+const GITHUB_CSV_URL = () => 'https://raw.githubusercontent.com/RMc-Explorers/ExplorersRC_OPM_2026/refs/heads/main/ExplorersOPM1.csv';
+const STORAGE_KEY    = () => 'OPM_combined_v6';
+const DAY_BOUNDARY_TS = 1788584373000;
 function getEventLabel(sortTs) {
   return sortTs < DAY_BOUNDARY_TS ? 'Day 1' : 'Day 2';
 }
